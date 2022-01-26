@@ -6,7 +6,7 @@ from app.models.user import User
 class DailyTracker(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     # user_id is FK to User table
-    user_id = db.Column(db.Integer, db.ForeignKey)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     date = db.Column(db.DateTime, nullable = False) 
     sleep = db.Column(db.Integer)
     exercise = db.Column(db.Integer)
@@ -20,6 +20,9 @@ class DailyTracker(db.Model):
     dizzy = db.Column(db.Integer)
     energy = db.Column(db.Integer)
     seasonal_illness = db.Column(db.Integer)
+    # user is the relationship to user table and there will now be a new attribute created 
+    # through backref, user.days
+    user = db.relationship("User", backref= "days")
     
     
 
