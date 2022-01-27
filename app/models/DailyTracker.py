@@ -1,6 +1,5 @@
 from app import db
-from app.models.meal import Meal
-from app.models.user import User
+
 
 
 class DailyTracker(db.Model):
@@ -22,7 +21,8 @@ class DailyTracker(db.Model):
     seasonal_illness = db.Column(db.Integer)
     # user is the relationship to user table and there will now be a new attribute created 
     # through backref, user.days
-    user = db.relationship("User", backref= "days")
+    
+    meals = db.relationship("Meal", backref= "day")
     
     
 

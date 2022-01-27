@@ -1,7 +1,6 @@
+
 from flask import Blueprint, jsonify, request, make_response
-from app.models.video import Video
-from app.models.customer import Customer
-from app.models.meal import Rental
+
 from app import db
 from datetime import datetime, timedelta
 
