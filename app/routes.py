@@ -38,7 +38,30 @@ def post_one_day(date):
 @daily_tracker_bp.route("/<date>", methods=["GET"])
 def get_days_data(date):
     data_so_far = DailyTracker.query.filter_by(date=date).first()
-    return jsonify({"sleep":data_so_far.sleep,
+    if not data_so_far:
+        return jsonify({
+                    "food": ["SelectMeal", "SelectMeal", 
+                        "SelectMeal", "SelectMeal",
+                        "SelectMeal", "SelectMeal"],
+                    "sleep":"",
+                    "exercise":"",
+                    "caffeine":"",
+                    "alcohol":"",
+                    "water":"",
+                    "stress":"",
+                    "headache":"",
+                    "nausea":"",
+                    "ibs":"",
+                    "dizzy":"",
+                    "energy":"",
+                    "seasonal":""})
+    meals = data_so_far.meals
+    daily_meals=[]
+    for meal in meals:
+        daily_meals.append(meal.food.name)
+    return jsonify({
+                    "food":daily_meals,
+                    "sleep":data_so_far.sleep,
                     "exercise":data_so_far.exercise,
                     "caffeine":data_so_far.caffeine,
                     "alcohol":data_so_far.alcohol,
@@ -54,8 +77,13 @@ def get_days_data(date):
 # this function will get the requested data fr BE based on query options fr FE, package it into data structure
 # to be sent back to FE
 def get_data_from_query():
-    request_body = request.get_json() # getting dict fr user of query params
-    symptom = request_body["symptom"]
+    request_body = request.args.to_dict() # getting dict fr user of query params
+    symptom = request_body["symptom"].lower()
+    if symptom == 'dizziness':
+        symptom = 'dizzy'
+    elif symptom == 'seasonal illness':
+        symptom = 'seasonal_illness'
+    print(symptom)
     level = request_body["severity"]
     data_from_query = DailyTracker.query.filter(getattr(DailyTracker, symptom)>level).all()
     requested_data_for_FE={"daily_list":[]}
