@@ -13,6 +13,9 @@ daily_tracker_bp = Blueprint("daily_tracker", __name__, url_prefix="/daily_track
 
 @daily_tracker_bp.route("/<date>", methods=["POST"])
 def post_one_day(date):
+    # Check data against DailyTracker table and if exists,
+    # IF statement to redirect FE to PATCH if data is already entered
+
     request_body = request.get_json()
     # taking info fr request_body and converting it to new DailyTracker object
     new_daily_input = DailyTracker(user_id = 1,
@@ -83,22 +86,21 @@ def get_data_from_query():
         symptom = 'dizzy'
     elif symptom == 'seasonal illness':
         symptom = 'seasonal_illness'
-    print(symptom)
     level = request_body["severity"]
     data_from_query = DailyTracker.query.filter(getattr(DailyTracker, symptom)>level).all()
     requested_data_for_FE={"daily_list":[]}
     for data in data_from_query:
-        daily_dict={"date":data.date, symptom:data.nausea}
-        if request_body["food"]== True:
+        daily_dict={"date":data.date, symptom:getattr(data, symptom)}
+        if request_body["food"]== 'true':
             daily_dict["food"]={}
 # populating the empty "food" dict by looping through each row and accessing the meal name and ingredients
             for meal in data.meals:
                 daily_dict["food"][meal.food.name]=meal.food.ingredients
-        if request_body["water"]== True:
+        if request_body["water"]== 'true':
             daily_dict["water"]= data.water
-        if request_body["alcohol"]== True:
+        if request_body["alcohol"]== 'true':
             daily_dict["alcohol"]= data.alcohol
-        if request_body["sleep"]== True:
+        if request_body["sleep"]== 'true':
             daily_dict["sleep"]= data.sleep
 
         requested_data_for_FE["daily_list"].append(daily_dict)
