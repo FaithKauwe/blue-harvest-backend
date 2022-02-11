@@ -2,7 +2,6 @@
 from flask import Blueprint, jsonify, request, make_response
 
 from app import db
-from datetime import datetime, timedelta
 from app.models.CommonFood import CommonFood
 from app.models.meal import Meal
 from app.models.DailyTracker import DailyTracker
@@ -11,29 +10,45 @@ from app.models.DailyTracker import DailyTracker
 daily_tracker_bp = Blueprint("daily_tracker", __name__, url_prefix="/daily_tracker")
 # beginning CRUD routes/ endpoints for daily_tracker
 
-@daily_tracker_bp.route("/<date>", methods=["POST"])
-def post_one_day(date):
+@daily_tracker_bp.route("/<date>", methods=["POST", "PUT"])
+def record_one_day(date):
     # Check data against DailyTracker table and if exists,
     # IF statement to redirect FE to PATCH if data is already entered
 
     request_body = request.get_json()
-    # taking info fr request_body and converting it to new DailyTracker object
-    new_daily_input = DailyTracker(user_id = 1,
-                                date=date,
-                                sleep=request_body["sleep"],
-                                exercise= request_body["exercise"],
-                                caffeine=request_body["caffeine"],
-                                alcohol=request_body["alcohol"],
-                                water=request_body["water"],
-                                stress=request_body["stress"],
-                                headache=request_body["headache"],
-                                nausea = request_body["nausea"],
-                                ibs=request_body["ibs"],
-                                dizzy=request_body["dizzy"],
-                                energy=request_body["energy"],
-                                seasonal_illness=request_body["seasonal"])
-    # committing changes to db
-    db.session.add(new_daily_input)
+    if request.method == "POST":
+        # taking info fr request_body and converting it to new DailyTracker object
+        new_daily_input = DailyTracker(user_id = 1,
+                                    date=date,
+                                    sleep=request_body["sleep"],
+                                    exercise= request_body["exercise"],
+                                    caffeine=request_body["caffeine"],
+                                    alcohol=request_body["alcohol"],
+                                    water=request_body["water"],
+                                    stress=request_body["stress"],
+                                    headache=request_body["headache"],
+                                    nausea = request_body["nausea"],
+                                    ibs=request_body["ibs"],
+                                    dizzy=request_body["dizzy"],
+                                    energy=request_body["energy"],
+                                    seasonal_illness=request_body["seasonal"])
+        # committing changes to db
+        db.session.add(new_daily_input)
+    elif request.method == "PUT":
+        day = DailyTracker.query.get(request_body['id'])
+        day.sleep=request_body["sleep"]
+        day.exercise= request_body["exercise"]
+        day.caffeine=request_body["caffeine"]
+        day.alcohol=request_body["alcohol"]
+        day.water=request_body["water"]
+        day.stress=request_body["stress"]
+        day.headache=request_body["headache"]
+        day.nausea = request_body["nausea"]
+        day.ibs=request_body["ibs"]
+        day.dizzy=request_body["dizzy"]
+        day.energy=request_body["energy"]
+        day.seasonal_illness=request_body["seasonal"]
+    
     db.session.commit()                            
     return make_response({"details": f"Daily Details for {date} Posted to Tracker"}, 201)
 # this get request will return info to the FE data input page to show user what data has already been input 
@@ -43,6 +58,8 @@ def get_days_data(date):
     data_so_far = DailyTracker.query.filter_by(date=date).first()
     if not data_so_far:
         return jsonify({
+                    "exists": False,
+                    "id": "",
                     "food": ["SelectMeal", "SelectMeal", 
                         "SelectMeal", "SelectMeal",
                         "SelectMeal", "SelectMeal"],
@@ -63,6 +80,8 @@ def get_days_data(date):
     for meal in meals:
         daily_meals.append(meal.food.name)
     return jsonify({
+                    "exists": True,
+                    "id": data_so_far.id,
                     "food":daily_meals,
                     "sleep":data_so_far.sleep,
                     "exercise":data_so_far.exercise,
@@ -109,17 +128,24 @@ def get_data_from_query():
 
 # assign meal to the new Blueprint instance
 meal_bp = Blueprint("meal", __name__, url_prefix="/meal")
-@meal_bp.route("/<date>", methods=["POST"])
-def post_one_meal(date):
+@meal_bp.route("/<date_id>", methods=["POST", "PUT"])
+def record_one_meal(date_id):
     request_body = request.get_json() # getting dict fr user of food_name: "oatmeal"
+    # Whether post/put, find food_id from CommonFood for given food name
     food_id = CommonFood.query.filter_by(name=request_body["food_name"]).first().id
-    date_id = DailyTracker.query.filter_by(date=date).first().id
-    new_meal_object = Meal(date_id= date_id,
-                            food_id=food_id)
-    # committing changes to db
-    db.session.add(new_meal_object)
-    db.session.commit()  
-    return make_response({"details": f"New meal for {date} was logged"}, 201)
+    # date_id = DailyTracker.query.filter_by(date=date).first().id
+            # Find the meals for a given date
+    meals_on_date = Meal.query.filter_by(date_id=date_id).all()
+    if request.method == "POST" or request_body["id"] >= len(meals_on_date):
+        new_meal_object = Meal(date_id= date_id,
+                                food_id=food_id)
+        # committing changes to db
+        db.session.add(new_meal_object)
+    elif request.method == "PUT":
+        # Change the food_id to what we found above for the meal iteration that we are on
+        meals_on_date[request_body["id"]].food_id = food_id
+    db.session.commit()
+    return make_response({"details": f"New meal was logged"}, 201)
 @meal_bp.route("/<date>", methods=["GET"])
 def get_meals_for_one_date(date):
     daily_id= DailyTracker.query.filter_by(date=date).first().id
