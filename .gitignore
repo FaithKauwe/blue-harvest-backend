@@ -142,4 +142,4 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-/migrations
+/local_migrations
