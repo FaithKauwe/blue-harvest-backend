@@ -18,7 +18,7 @@ def record_one_day(date):
     request_body = request.get_json()
     if request.method == "POST":
         # taking info fr request_body and converting it to new DailyTracker object
-        new_daily_input = DailyTracker(user_id = 1,
+        new_daily_input = DailyTracker(user_id = 4,
                                     date=date,
                                     sleep=request_body["sleep"],
                                     exercise= request_body["exercise"],
