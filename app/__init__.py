@@ -42,4 +42,5 @@ def create_app(test_config=None):
     app.register_blueprint(common_food_bp)
     
     CORS(app)
+    app.config['CORS_HEADERS'] = 'Content-Type'
     return app
