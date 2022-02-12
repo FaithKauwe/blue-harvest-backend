@@ -15,11 +15,11 @@ itsdangerous==2.0.1
 Jinja2==3.0.3
 Mako==1.1.6
 MarkupSafe==2.0.1
+mysql-connector-python==8.0.28
 packaging==21.0
 pluggy==1.0.0
 protobuf==3.19.3
 py==1.10.0
-PyMySQL==1.0.2
 pyparsing==2.4.7
 pytest==6.2.5
 python-dotenv==0.19.2

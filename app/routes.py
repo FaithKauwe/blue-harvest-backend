@@ -109,6 +109,8 @@ def get_data_from_query():
     level = request_body["severity"]
     data_from_query = DailyTracker.query.filter(getattr(DailyTracker, symptom)>level).all()
     requested_data_for_FE={"daily_list":[]}
+    if not data_from_query:
+        return make_response({"daily_list": False}, 200)
     for data in data_from_query:
         daily_dict={"date":data.date, symptom:getattr(data, symptom)}
         if request_body["food"]== 'true':
@@ -129,12 +131,12 @@ def get_data_from_query():
 
 # assign meal to the new Blueprint instance
 meal_bp = Blueprint("meal", __name__, url_prefix="/meal")
-@meal_bp.route("/<date_id>", methods=["POST", "PUT"])
-def record_one_meal(date_id):
+@meal_bp.route("/<date>", methods=["POST", "PUT"])
+def record_one_meal(date):
     request_body = request.get_json() # getting dict fr user of food_name: "oatmeal"
     # Whether post/put, find food_id from CommonFood for given food name
     food_id = CommonFood.query.filter_by(name=request_body["food_name"]).first().id
-    # date_id = DailyTracker.query.filter_by(date=date).first().id
+    date_id = DailyTracker.query.filter_by(date=date).first().id
             # Find the meals for a given date
     meals_on_date = Meal.query.filter_by(date_id=date_id).all()
     if request.method == "POST" or request_body["id"] >= len(meals_on_date):
