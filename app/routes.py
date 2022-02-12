@@ -6,6 +6,7 @@ from app.models.CommonFood import CommonFood
 from app.models.meal import Meal
 from app.models.DailyTracker import DailyTracker
 
+USER_ID = 1
 # assign daily_tracker to the new Blueprint instance
 daily_tracker_bp = Blueprint("daily_tracker", __name__, url_prefix="/daily_tracker")
 # beginning CRUD routes/ endpoints for daily_tracker
@@ -18,7 +19,7 @@ def record_one_day(date):
     request_body = request.get_json()
     if request.method == "POST":
         # taking info fr request_body and converting it to new DailyTracker object
-        new_daily_input = DailyTracker(user_id = 4,
+        new_daily_input = DailyTracker(user_id = USER_ID,
                                     date=date,
                                     sleep=request_body["sleep"],
                                     exercise= request_body["exercise"],
